@@ -1,4 +1,3 @@
-#Dette er en prøve oppdatering
 # example Beam_models
 # ----------------------------------------------------------------
 # PURPOSE
