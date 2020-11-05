@@ -108,7 +108,7 @@ class BeamModel:
         K_sys = np.zeros((self.num_dofs,self.num_dofs))
 
         for iel in range(self.num_elements):
-            inod1 = self.Enods[iel,0]-1
+            inod1 = self.Enods[iel,0]-1 
             inod2 = self.Enods[iel,1]-1
             ex1 = self.coords[inod1,0]
             ex2 = self.coords[inod2,0]
