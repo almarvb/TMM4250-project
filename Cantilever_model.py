@@ -17,7 +17,7 @@ import TwoSimpleBeamModels_with_TODO as sbeam
 # ------------------ Perform linear solution
 
 num_nodes = 9
-beamModel = sbeam.SimplySupportedBeamModel(num_nodes)
+beamModel = sbeam.CantileverWithEndMoment(num_nodes)
 #beamModel = CantileverWithEndMoment(num_nodes)
 
 sbeam.solveLinearSteps(beamModel)
@@ -34,6 +34,3 @@ for iStep in range(0,len(beamModel.load_history), step_inc):
     beamModel.plotDispState(iStep)
 
 print("End")
-
-
-print("Hello World")

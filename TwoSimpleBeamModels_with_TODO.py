@@ -294,7 +294,7 @@ class CantileverWithEndMoment(BeamModel):
         self.plotDof = self.num_dofs - 1 # Setting which dof for the Load-disp curve: y disp of last node
 
 
-
+'''
 # ------------------ Perform linear solution
 
 num_nodes = 9
@@ -316,4 +316,4 @@ for iStep in range(0,len(beamModel.load_history), step_inc):
 
 print("End")
 
-
+'''
