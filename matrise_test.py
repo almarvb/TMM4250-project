@@ -1,10 +1,12 @@
 import numpy as np
 import math
 
-a_vec = np.array([[1,2,3]])
-b_vec = np.array([[5,10,15]])
+disp_global = np.array([1,2,3,4,5,6])
 
-res_vec = a_vec*b_vec
 
-print( res_vec)
-print(res_vec.T)
+diffx = disp_global[3]-disp_global[0]
+diffy = disp_global[4]-disp_global[1]
+Ld = math.sqrt(diffy**2+diffx**2)
+#print(diffx)
+#print(diffy)
+print('Length_deformed is equal to: ' + str(Ld))
