@@ -36,4 +36,16 @@ for iStep in range(0,len(beamModel.load_history), step_inc):
 print("End")
 
 #--------------------------------------------------------------------------------------------
-# ------------------ Perform non-linear solution
+# ------------------ implementing non-linear solution
+
+
+
+
+
+
+
+#--------------------------------------------------------------------------------------------
+# ------------------ Perform Newton iterations with a load control
+#Incrementell metode (ingen korrektor slritt)
+
+
