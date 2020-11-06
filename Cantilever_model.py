@@ -16,7 +16,7 @@ import TwoSimpleBeamModels_with_TODO as sbeam
 #--------------------------------------------------------------------------------------------
 # ------------------ Perform linear solution
 
-num_nodes = 9
+num_nodes = 15
 beamModel = sbeam.CantileverWithEndMoment(num_nodes)
 #beamModel = CantileverWithEndMoment(num_nodes)
 
