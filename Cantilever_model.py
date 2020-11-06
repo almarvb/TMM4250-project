@@ -34,3 +34,5 @@ for iStep in range(0,len(beamModel.load_history), step_inc):
     beamModel.plotDispState(iStep)
 
 print("End")
+
+#Eg skriv litt greier her for å sjå om det funker
