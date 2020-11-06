@@ -31,12 +31,25 @@ def beam2local_def_disp(ex,ey, disp_global):
     eVec12 = np.array([ex[1] - ex[0], ey[1] - ey[0]])
     L0 = math.sqrt(eVec12 @ eVec12)
 
-    Ld = L0 #TODO:  correct this
+    diffx = disp_global[3]-disp_global[0]
+    diffy = disp_global[4]-disp_global[1]
+    Ld = math.sqrt(diffy**2+diffx**2)
 
-    # TODO: Quite a bit here
-
-    theta1_def = 0.0
-    theta2_def = 0.0
+    # TODO: Quite a bit here (Almar: tror jeg har gjort alt. men maa sjekkes)
+    ex0 = np.array([[(ex[1]-ex[0])/L0,
+                    (ey[1]-ey[0])/L0]])
+    exn1 = ((ex[1]+disp_global[3])-(ex[0]+disp_global[0]))/Ld
+    exn2 = ((ey[1]+disp_global[4])-(ey[0]+disp_global[1]))/Ld
+    exn = np.array([exn1,
+                    exn2])
+    eyn = np.array([[-exn2,
+                    exn1]])
+    R1 = rot_matrix(disp_global[2])
+    R2 = rot_matrix(disp_global[5])
+    t1 = R1*ex0
+    t2 = R2 *ex0
+    theta1_def = math.asin(eyn.T * t1)
+    theta2_def = math.asin(eyn.T * t2)
 
     def_disp_local = np.array([ -0.5*(Ld - L0),
                                 0.0,
