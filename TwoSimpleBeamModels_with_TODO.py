@@ -22,9 +22,9 @@ def solveArchLength(problem, archLength=0.02, max_steps=50, max_iter=30):
 
     for iStep in range(max_steps):
 #---
-        #TODO: Implement this
+        #TODO: Implement this predictor step, trur eg er ferdig
 
-        #predictior step
+
         q_Vec = problem.get_incremental_load(Lambda)
 
         K_mat = problem.get_K_sys(uVec)
@@ -32,22 +32,34 @@ def solveArchLength(problem, archLength=0.02, max_steps=50, max_iter=30):
         w_q0 = np.linalg.solve(K_mat,q_vec)
 
         f = math.sqrt(1 + np.matrix.transpose(w_q0) * w_q0)
+
         if np.matrix.transpose(w_q0) * u_vec > 1:
             delta_Lambda = archLength / f
         else
             delta_Lambda = - archLength / f
 
-        u_vec_0 = delta_Lambda * w_q0
+
         Lambda += delta_Lambda
-        u_vec += delta_Lambda*w_q
+        uVec += delta_Lambda*w_q0
 
 
 #---
         for iIter in range(max_iter):
+            res_Vec = problem.get_residual(uVec, Lambda)
+            K_mat = prblem.get_K_sys(uVec)
+            q_Vec = problem.get_incremental_load(Lambda)
 
-            # TODO: Implement this
+            w_q = np.linalg.solve(K_mat,q)
+            w_r = np.linalg.solve(K_mat,-res_Vec)
 
-            #corrector
+            d_Lambda = - np.matrix.transpose(w_q)*w_r / ( 1 + np.matrix.transpose(w_q)*w_r)
+
+            Lambda += d_Lambda
+            uVec += w_r + d_Lambda*w_q
+
+            # TODO: Implement this corrector step, trur eg er ferdig
+
+
 
             res_Vec = problem.get_residual(uVec, Lambda)
             if (res_Vec.dot(res_Vec) < 1.0e-15):  #check if residual is small enough
