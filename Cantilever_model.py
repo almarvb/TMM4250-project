@@ -21,6 +21,7 @@ beamModel = sbeam.CantileverWithEndMoment(num_nodes)
 #beamModel = CantileverWithEndMoment(num_nodes)
 
 sbeam.solveLinearSteps(beamModel)
+#sbeam.solveArchLength(beamModel)
 
 num_steps = len(beamModel.load_history)
 
