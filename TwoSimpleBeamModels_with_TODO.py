@@ -21,15 +21,36 @@ def solveArchLength(problem, archLength=0.02, max_steps=50, max_iter=30):
     d_q_prev = np.zeros(num_dofs)
 
     for iStep in range(max_steps):
-
+#---
         #TODO: Implement this
 
+        #predictior step
+        q_Vec = problem.get_incremental_load(Lambda)
+
+        K_mat = problem.get_K_sys(uVec)
+
+        w_q0 = np.linalg.solve(K_mat,q_vec)
+
+        f = math.sqrt(1 + np.matrix.transpose(w_q0) * w_q0)
+        if np.matrix.transpose(w_q0) * u_vec > 1:
+            delta_Lambda = archLength / f
+        else
+            delta_Lambda = - archLength / f
+
+        u_vec_0 = delta_Lambda * w_q0
+        Lambda += delta_Lambda
+        u_vec += delta_Lambda*w_q
+
+
+#---
         for iIter in range(max_iter):
 
             # TODO: Implement this
 
+            #corrector
+
             res_Vec = problem.get_residual(uVec, Lambda)
-            if (res_Vec.dot(res_Vec) < 1.0e-15):
+            if (res_Vec.dot(res_Vec) < 1.0e-15):  #check if residual is small enough
                 break
 
         problem.append_solution(Lambda, uVec)
