@@ -21,38 +21,30 @@ def solveArchLength(problem, archLength=0.02, max_steps=50, max_iter=30):
     d_q_prev = np.zeros(num_dofs)
 
     for iStep in range(max_steps):
-#---
         #TODO: Implement this predictor step, trur eg er ferdig
-
-
         q_Vec = problem.get_incremental_load(Lambda)
-
         K_mat = problem.get_K_sys(uVec)
 
-        w_q0 = np.linalg.solve(K_mat,q_vec)
+        w_q0 = np.linalg.solve(K_mat,q_Vec)
+        f = math.sqrt(1 + np.matmul(np.transpose(w_q0) , w_q0))
 
-        f = math.sqrt(1 + np.matrix.transpose(w_q0) * w_q0)
-
-        if np.matrix.transpose(w_q0) * u_vec > 1:
+        if np.matmul(np.matrix.transpose(w_q0) , uVec) > 1:
             delta_Lambda = archLength / f
-        else
+        else:
             delta_Lambda = - archLength / f
-
 
         Lambda += delta_Lambda
         uVec += delta_Lambda*w_q0
 
-
-#---
         for iIter in range(max_iter):
-            res_Vec = problem.get_residual(uVec, Lambda)
-            K_mat = prblem.get_K_sys(uVec)
+            res_Vec = problem.get_residual(Lambda, uVec)
+            K_mat = problem.get_K_sys(uVec)
             q_Vec = problem.get_incremental_load(Lambda)
 
-            w_q = np.linalg.solve(K_mat,q)
+            w_q = np.linalg.solve(K_mat,q_Vec)
             w_r = np.linalg.solve(K_mat,-res_Vec)
 
-            d_Lambda = - np.matrix.transpose(w_q)*w_r / ( 1 + np.matrix.transpose(w_q)*w_r)
+            d_Lambda = - np.matmul(np.matrix.transpose(w_q),w_r) / ( 1 + np.matmul(np.matrix.transpose(w_q),w_r))
 
             Lambda += d_Lambda
             uVec += w_r + d_Lambda*w_q
@@ -61,7 +53,7 @@ def solveArchLength(problem, archLength=0.02, max_steps=50, max_iter=30):
 
 
 
-            res_Vec = problem.get_residual(uVec, Lambda)
+            res_Vec = problem.get_residual(Lambda , uVec)
             if (res_Vec.dot(res_Vec) < 1.0e-15):  #check if residual is small enough
                 break
 
@@ -175,7 +167,7 @@ class BeamModel:
             ex2 = self.coords[inod2,0]
             ex = np.array([ex1,ex2])
             ey = np.array([self.coords[inod1,1],self.coords[inod2,1]])
-            Ke = CorotBeam.beam2e(ex, ey, self.ep)
+            Ke = CorotBeam.beam2e(ex, ey, self.ep)[0]
             Edofs = self.Edofs[iel] - 1
             disp_e = disp_sys[np.ix_(Edofs)]
             f_int_e = Ke * disp_e
