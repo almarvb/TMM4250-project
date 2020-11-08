@@ -21,7 +21,7 @@ def solveArchLength(problem, archLength=0.02, max_steps=50, max_iter=30):
     d_q_prev = np.zeros(num_dofs)
 
     for iStep in range(max_steps):
-        #TODO: Implement this predictor step, trur eg er ferdig
+        #TODO: Implement this predictor step, (sverre: trur eg er ferdig)
         q_Vec = problem.get_incremental_load(Lambda)
         K_mat = problem.get_K_sys(uVec)
 
@@ -49,9 +49,7 @@ def solveArchLength(problem, archLength=0.02, max_steps=50, max_iter=30):
             Lambda += d_Lambda
             uVec += w_r + d_Lambda*w_q
 
-            # TODO: Implement this corrector step, trur eg er ferdig
-
-
+            # TODO: Implement this corrector step, (sverre: trur eg er ferdig, men funker ikkje endo)
 
             res_Vec = problem.get_residual(Lambda , uVec)
             if (res_Vec.dot(res_Vec) < 1.0e-15):  #check if residual is small enough

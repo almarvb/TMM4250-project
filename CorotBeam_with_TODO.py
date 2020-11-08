@@ -60,7 +60,7 @@ def beam2local_def_disp(ex,ey, disp_global):
     return def_disp_local
 
 
-def beam2corot_Ke_and_Fe(ex,ey,ep, disp_global):
+def beam2corot_Ke_and_Fe(ex,ey,ep, disp_global): #
     """
     Compute the stiffness matrix and internal forces for a two dimensional beam element
     relative to deformed configuration.
@@ -72,8 +72,9 @@ def beam2corot_Ke_and_Fe(ex,ey,ep, disp_global):
 
 
     :return mat Ke: element stiffness matrix [6 x 6]
-    :return mat fe: element stiffness matrix [6 x 1]
+    :return mat fe: element internal force vector [6 x 1]
     """
+    # TODO: Quite a bit here (Sverre: prøver å fnne ut av denne. vanskelig)
     # Undeformed length and unit vector along element
     eVec12 = np.array([ex[1] - ex[0], ey[1] - ey[0]])
     L0 = math.sqrt(eVec12 @ eVec12)
@@ -83,9 +84,30 @@ def beam2corot_Ke_and_Fe(ex,ey,ep, disp_global):
     ex_def = ex + [disp_global[0], disp_global[3]]
     ey_def = ey + [disp_global[1], disp_global[4]]
 
-    # TODO: Quite a bit here
-    Ke_global = np.zeros((6,6))
-    fe_int_global = np.zeros(6)
+    eVec12_def = np.array([ex_def[1] - ex_def[0], ey_def[1] - ey_def[0]])
+    Ld = math.sqrt(eVec12_def @ eVec12_def)
+
+    #N = E * A * ( Ld - L0)/ L0
+    #V =
+    #disp_def_local = beam2local_def_disp(ex,ey,disp_global)
+
+    Ke_m = beam2local_stiff(L0,ep) # Element material stiffness of undeformed ghost element in local
+
+    Ke_g = np.array([
+                     [ 0        , -V/(2*Ld) , 0 , 0       , V/(2*Ld) , 0 ],
+                     [ -V/(2*Ld) , N/Ld      , 0 , V/(2*Ld) , -N/Ld    , 0 ],
+                     [ 0        , 0        , 0 , 0       , 0       , 0 ],
+                     [ 0        , V/(2*Ld)  , 0 , 0       , -V/(2*Ld), 0 ],
+                     [ V/(2*Ld)  , -N/Ld     , 0 , -V/(2*Ld), N/Ld     , 0 ],
+                     [0         , 0        , 0 , 0       , 0       , 0 ]
+                     ]) # Ke_g element geometric stiffness matrix
+
+    Ke = Ke_m + Ke_g
+    Ke_global = np.transpose(Te) @ Ke @ Te
+
+    fe_int = Ke @ disp_def_local
+    fe_int_global = np.transpose(Te) @ fe_int
+
 
     return Ke_global, fe_int_global
 
