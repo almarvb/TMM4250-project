@@ -61,8 +61,8 @@ num_nodes = 9
 beamModel = DeepArchModel(num_nodes)
 #beamModel = sbeam.SimplySupportedBeamModel(num_nodes)
 
-sbeam.solveLinearSteps(beamModel)
-#sbeam.solveArchLength(beamModel)
+#sbeam.solveLinearSteps(beamModel)
+sbeam.solveArchLength(beamModel)
 
 num_steps = len(beamModel.load_history)
 
