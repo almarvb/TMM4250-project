@@ -2,7 +2,6 @@
 # ----------------------------------------------------------------
 # PURPOSE
 #  Starting point for a couple of beam models
-#
 
 
 import math
@@ -66,18 +65,36 @@ def solveNonlinLoadControl(problem, load_steps=0.01, max_steps=100, max_iter=30)
     d_uVec = np.zeros(num_dofs)
 
     for iStep in range(max_steps):
+        
+        #TODO: Implement this Predictor: (Almar: Newton itterasjon her?)
 
         Lambda = load_steps * iStep
 
-        #TODO: Implement this
+        q_Vec   = problem.get_incremental_load(Lambda)
 
+        K_mat = problem.get_K_sys(uVec)
+
+        #Factor K_mat
+        #Solve K_mat* Delta_uVec = q_vec * Delta_Lambda
+        #uVec = uVec * Delta_uVec
+        #Lambda = Lambda * Delta_Lambda
+
+        uVec = 
+
+        
         for iIter in range(max_iter):
 
-            # TODO: Implement this
+            # TODO: Implement this Korrektor (Almar: Newton metode her)
+            # Husk at load  control betyr: at all kerreksjon er horisontal
+            
 
             res_Vec = problem.get_residual(uVec, Lambda)
             if (res_Vec.dot(res_Vec) < 1.0e-15):
-                break
+                break 
+            d_res_Vec = (problem.get_residual(uVec+load_steps,Lambda) - res_Vec)/load_steps
+            d_uVec = -res_Vec / d_res_Vec
+            uVec = uVec + d_uVec 
+            
 
         problem.append_solution(Lambda, uVec)
         print(" ")
