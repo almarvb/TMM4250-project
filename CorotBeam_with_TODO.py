@@ -87,8 +87,8 @@ def beam2corot_Ke_and_Fe(ex,ey,ep, disp_global): #
     eVec12_def = np.array([ex_def[1] - ex_def[0], ey_def[1] - ey_def[0]])
     Ld = math.sqrt(eVec12_def @ eVec12_def) #Deformed element length
 
-    #N = E * A * ( Ld - L0)/ L0
-    #V =
+    N = E * A * ( Ld - L0)/ L0
+    #V =                    #TODO
     #disp_def_local = beam2local_def_disp(ex,ey,disp_global)
 
     Kle = beam2local_stiff(L0,ep) # Element material stiffness of undeformed ghost element in local
@@ -109,7 +109,7 @@ def beam2corot_Ke_and_Fe(ex,ey,ep, disp_global): #
                         [ 0, 0, 1, 0, 0, 0 ],
                         [-1/2, 0, 0, 1/2, 0, 0 ],
                         [ 0, 0, 0, 0, 0, 0, ],
-                        [ 0, 0, 0, 0, 0, 10]])
+                        [ 0, 0, 0, 0, 0, 1]])
 
     Ke_g = Te.T @ Kg_sym @ Te #geometric stiffness, global coordinates
     Ke_m = Te.T @ Kle @ P_local @ Te #material stiffness, global coordinates
