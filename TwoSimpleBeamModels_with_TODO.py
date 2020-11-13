@@ -4,6 +4,7 @@
 #  Starting point for a couple of beam models
 #
 
+
 import math
 import numpy as np
 import matplotlib.pyplot as plt
