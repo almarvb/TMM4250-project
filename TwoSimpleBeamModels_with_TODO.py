@@ -185,7 +185,7 @@ class BeamModel:
             ey = np.array([self.coords[inod1,1],self.coords[inod2,1]])
             Ke = CorotBeam.beam2e(ex, ey, self.ep)[0]
             Edofs = self.Edofs[iel] - 1
-            disp_e = disp_sys[np.ix_(Edofs)]
+            disp_e = disp_sys[np.ix_(Edofs)] #Denne fungerer ikke, faar:'float' object is not subscriptable (nonlinear)
             f_int_e = Ke * disp_e
             f_int_sys[np.ix_(Edofs)] += f_int_e
 

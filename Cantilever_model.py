@@ -15,7 +15,7 @@ import TwoSimpleBeamModels_with_TODO as sbeam
 
 #--------------------------------------------------------------------------------------------
 # ------------------ Perform linear solution
-
+'''
 num_nodes = 9
 beamModel = sbeam.CantileverWithEndMoment(num_nodes)
 #beamModel = CantileverWithEndMoment(num_nodes)
@@ -35,17 +35,26 @@ for iStep in range(0,len(beamModel.load_history), step_inc):
     beamModel.plotDispState(iStep)
 
 print("End")
-
-
-#--------------------------------------------------------------------------------------------
-# ------------------ implementing non-linear solution
-
-
-
-
-
-
+'''
 
 #--------------------------------------------------------------------------------------------
-# ------------------ Perform Newton iterations with a load control
-#Incrementell metode (ingen korrektor slritt)
+# ------------------ Preform non-linear solution (load controll + Newton itterations )
+num_nodes = 9
+beamModel = sbeam.CantileverWithEndMoment(num_nodes)
+#beamModel = CantileverWithEndMoment(num_nodes)
+
+sbeam.solveNonlinLoadControl(beamModel)
+#Nonlinear load Control, with newton steps
+
+num_steps = len(beamModel.load_history)
+
+for iStep in range(num_steps):
+   print("LoadFactor= {:12.3e}".format(beamModel.load_history[iStep]))
+   print("dispVec={:}".format(iStep))
+   print(beamModel.disp_history[iStep])
+
+step_inc = (num_steps // 10)
+for iStep in range(0,len(beamModel.load_history), step_inc):
+    beamModel.plotDispState(iStep)
+
+print("End")
