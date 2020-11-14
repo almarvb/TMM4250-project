@@ -2,7 +2,6 @@
 # ----------------------------------------------------------------
 # PURPOSE
 #  Starting point for a couple of beam models
-#
 
 
 import math
@@ -66,18 +65,35 @@ def solveNonlinLoadControl(problem, load_steps=0.01, max_steps=100, max_iter=30)
     d_uVec = np.zeros(num_dofs)
 
     for iStep in range(max_steps):
+        
+        #TODO: Implement this Predictor: (Almar: Load control, forward euler)
 
         Lambda = load_steps * iStep
+        Lambda_nxt = load_steps * (iStep+1)
+        q_Vec   = problem.get_incremental_load(Lambda)
+        K_mat = problem.get_K_sys(uVec)
 
-        #TODO: Implement this
+        Delta_Lambda = Lambda_nxt-Lambda
+        K_mat_inv = np.linalg.inv(K_mat)
+        v_mat = K_mat_inv *q_Vec
+        Delta_uVec = v_mat*Delta_Lambda 
 
+        uVec = uVec * Delta_uVec
+        
         for iIter in range(max_iter):
 
-            # TODO: Implement this
+            # TODO: Implement this Korrektor (Almar: Newton metode her)
+            # Husk at load  control betyr: at all kerreksjon er horisontal (lasten holdes konstant i koreksjonen)
+            # Her regnes residual derivasjonen altså ikke eksakt, men tilnermes med en delta i load_steps, sikkert ikke like bra
+            
 
             res_Vec = problem.get_residual(uVec, Lambda)
             if (res_Vec.dot(res_Vec) < 1.0e-15):
-                break
+                break 
+            d_res_Vec = (problem.get_residual(uVec+load_steps,Lambda) - res_Vec)/load_steps #Finner endring i residual. (dette er litt fishi)
+            d_uVec = -res_Vec / d_res_Vec
+            uVec = uVec + d_uVec 
+            
 
         problem.append_solution(Lambda, uVec)
         print(" ")
