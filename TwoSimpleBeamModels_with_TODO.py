@@ -61,8 +61,8 @@ def solveArchLength(problem, archLength=0.02, max_steps=50, max_iter=30):
 
 def solveNonlinLoadControl(problem, load_steps=0.01, max_steps=100, max_iter=30):
     num_dofs = problem.get_num_dofs()
-    uVec   = np.zeros(num_dofs)
-    d_uVec = np.zeros(num_dofs)
+    uVec   = np.zeros(shape=(num_dofs,1))
+    d_uVec = np.zeros(shape=(num_dofs,1)
 
     for iStep in range(max_steps):
         
@@ -183,7 +183,7 @@ class BeamModel:
             ex2 = self.coords[inod2,0]
             ex = np.array([ex1,ex2])
             ey = np.array([self.coords[inod1,1],self.coords[inod2,1]])
-            Ke,f_int_e = CorotBeam.beam2corot_Ke_and_Fe(ex, ey, self.ep)[0]
+            Ke,f_int_e = CorotBeam.beam2corot_Ke_and_Fe(ex, ey, self.ep,disp_sys[3*iel:3*iel+6])[0]
             Edofs = self.Edofs[iel] - 1
             #disp_e = disp_sys[np.ix_(Edofs)] #Denne fungerer ikke, faar:'float' object is not subscriptable (nonlinear)
             #f_int_e = Ke * disp_e
