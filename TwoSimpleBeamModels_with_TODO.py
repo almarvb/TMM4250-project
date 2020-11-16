@@ -90,9 +90,12 @@ def solveNonlinLoadControl(problem, load_steps=0.01, max_steps=100, max_iter=30)
             res_Vec = problem.get_residual(Lambda, uVec)
             if (res_Vec.dot(res_Vec) < 1.0e-15):
                 break 
-            d_res_Vec = (problem.get_residual(Lambda,uVec+load_steps) - res_Vec)/load_steps #Finner endring i residual. (dette er litt fishi)
-            delta_uVec = -res_Vec / d_res_Vec
-            uVec = uVec + delta_uVec 
+            #d_res_Vec = (problem.get_residual(Lambda,uVec+load_steps) - res_Vec)/load_steps #Finner endring i residual. (dette er litt fishi)
+            delta_uVec = K_mat_inv @ (-res_Vec)
+            uVec = uVec + delta_uVec
+            
+            K_mat = problem.get_K_sys(uVec)
+            K_mat_inv = np.linalg.inv(K_mat) 
             
 
         problem.append_solution(Lambda, uVec)
@@ -184,10 +187,10 @@ class BeamModel:
             ex = np.array([ex1,ex2])
             ey = np.array([self.coords[inod1,1],self.coords[inod2,1]])
             f_int_e = CorotBeam.beam2corot_Ke_and_Fe(ex, ey, self.ep,disp_sys[3*iel:3*iel+6]) [1]
-            Edofs = self.Edofs[iel] - 1
-            #disp_e = disp_sys[np.ix_(Edofs)] #Denne fungerer ikke, faar:'float' object is not subscriptable (nonlinear)
+            Edofs = self.Edofs[iel] - 1 #Tror ikke vi har forstaatt Endofs hely
+            #disp_e = disp_sys[np.ix_(Edofs)] 
             #f_int_e = Ke * disp_e
-            f_int_sys[np.ix_(Edofs)] += f_int_e
+            f_int_sys[np.ix_(Edofs)] += f_int_e #Kan hende dette maa endres
 
         return f_int_sys
 
@@ -199,7 +202,7 @@ class BeamModel:
 
     def get_residual(self,loadFactor,disp_sys):
         f_int = self.get_internal_forces(disp_sys)
-        f_res = self.get_external_load(loadFactor) + self.get_internal_forces(disp_sys)
+        f_res = self.get_external_load(loadFactor) + f_int
         return f_res
 
     def append_solution(self, loadFactor, disp_sys):
