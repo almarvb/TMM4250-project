@@ -87,10 +87,10 @@ def solveNonlinLoadControl(problem, load_steps=0.01, max_steps=100, max_iter=30)
             # Her regnes residual derivasjonen altså ikke eksakt, men tilnermes med en delta i load_steps, sikkert ikke like bra
             
 
-            res_Vec = problem.get_residual(uVec, Lambda)
+            res_Vec = problem.get_residual(Lambda, uVec)
             if (res_Vec.dot(res_Vec) < 1.0e-15):
                 break 
-            d_res_Vec = (problem.get_residual(uVec+load_steps,Lambda) - res_Vec)/load_steps #Finner endring i residual. (dette er litt fishi)
+            d_res_Vec = (problem.get_residual(Lambda,uVec+load_steps) - res_Vec)/load_steps #Finner endring i residual. (dette er litt fishi)
             d_uVec = -res_Vec / d_res_Vec
             uVec = uVec + d_uVec 
             
@@ -183,10 +183,10 @@ class BeamModel:
             ex2 = self.coords[inod2,0]
             ex = np.array([ex1,ex2])
             ey = np.array([self.coords[inod1,1],self.coords[inod2,1]])
-            Ke = CorotBeam.beam2e(ex, ey, self.ep)[0]
+            Ke,f_int_e = CorotBeam.beam2corot_Ke_and_Fe(ex, ey, self.ep)[0]
             Edofs = self.Edofs[iel] - 1
-            disp_e = disp_sys[np.ix_(Edofs)] #Denne fungerer ikke, faar:'float' object is not subscriptable (nonlinear)
-            f_int_e = Ke * disp_e
+            #disp_e = disp_sys[np.ix_(Edofs)] #Denne fungerer ikke, faar:'float' object is not subscriptable (nonlinear)
+            #f_int_e = Ke * disp_e
             f_int_sys[np.ix_(Edofs)] += f_int_e
 
         return f_int_sys
