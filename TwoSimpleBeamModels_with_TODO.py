@@ -76,7 +76,7 @@ def solveNonlinLoadControl(problem, load_steps=0.01, max_steps=100, max_iter=30)
         Delta_Lambda = Lambda_nxt-Lambda
         K_mat_inv = np.linalg.inv(K_mat)
         v_mat = K_mat_inv @ q_Vec
-        d_uVec = v_mat*Delta_Lambda 
+        d_uVec = v_mat * Delta_Lambda
 
         uVec = uVec + d_uVec
         
@@ -158,8 +158,9 @@ class BeamModel:
             ex2 = self.coords[inod2,0]
             ex = np.array([ex1,ex2])
             ey = np.array([self.coords[inod1,1],self.coords[inod2,1]])
-            Ke = CorotBeam.beam2e(ex, ey, self.ep)
             Edofs = self.Edofs[iel] - 1
+            #Ke = CorotBeam.beam2e(ex, ey, self.ep)
+            Ke = CorotBeam.beam2corot_Ke_and_Fe(ex, ey, self.ep, disp_sys[np.ix_(Edofs)] )[0] #korotert stivhet
             K_sys[np.ix_(Edofs,Edofs)] += Ke
 
         # Set boundary conditions
@@ -176,7 +177,7 @@ class BeamModel:
         return num_dofs
 
     def get_internal_forces(self, disp_sys):
-        # Build system stiffness matrix for the structure
+        # Build internal force vector for the structure
         f_int_sys = np.zeros(self.num_dofs)
 
         for iel in range(self.num_elements):
@@ -186,11 +187,12 @@ class BeamModel:
             ex2 = self.coords[inod2,0]
             ex = np.array([ex1,ex2])
             ey = np.array([self.coords[inod1,1],self.coords[inod2,1]])
-            f_int_e = CorotBeam.beam2corot_Ke_and_Fe(ex, ey, self.ep,disp_sys[3*iel:3*iel+6]) [1]
-            Edofs = self.Edofs[iel] - 1 #Tror ikke vi har forstaatt Endofs hely
+
+            Edofs = self.Edofs[iel] - 1 #Tror ikke vi har forstaatt Edofs helt. i=1 -> Edofs = [0,1,2,3,4,5], i=2 -> Edofs = [3,4,5,6,7,8]
+            f_int_e = CorotBeam.beam2corot_Ke_and_Fe(ex, ey, self.ep, disp_sys[np.ix_(Edofs)])[1] #korotert internal force [6x1]
             #disp_e = disp_sys[np.ix_(Edofs)] 
             #f_int_e = Ke * disp_e
-            f_int_sys[np.ix_(Edofs)] += f_int_e #Kan hende dette maa endres
+            f_int_sys[np.ix_(Edofs)] += f_int_e #Kan hende dette maa endres [num_dofs,1]
 
         return f_int_sys
 
