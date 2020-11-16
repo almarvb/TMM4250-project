@@ -86,7 +86,9 @@ def beam2corot_Ke_and_Fe(ex,ey,ep, disp_global): #
 
     eVec12_def = np.array([ex_def[1] - ex_def[0], ey_def[1] - ey_def[0]])
     Ld = math.sqrt(eVec12_def @ eVec12_def) #Deformed element length
-
+    E = ep[0]
+    A = ep[1]
+    I = ep[2]
     N = E * A * ( Ld - L0)/ L0
     #V =                    #TODO
     #disp_def_local = beam2local_def_disp(ex,ey,disp_global)

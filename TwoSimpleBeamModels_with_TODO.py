@@ -61,8 +61,8 @@ def solveArchLength(problem, archLength=0.02, max_steps=50, max_iter=30):
 
 def solveNonlinLoadControl(problem, load_steps=0.01, max_steps=100, max_iter=30):
     num_dofs = problem.get_num_dofs()
-    uVec   = np.zeros(shape=(num_dofs,1))
-    d_uVec = np.zeros(shape=(num_dofs,1)
+    uVec   = np.zeros(shape=(num_dofs,))
+    #d_uVec = np.zeros(shape=(num_dofs,1))
 
     for iStep in range(max_steps):
         
@@ -75,10 +75,10 @@ def solveNonlinLoadControl(problem, load_steps=0.01, max_steps=100, max_iter=30)
 
         Delta_Lambda = Lambda_nxt-Lambda
         K_mat_inv = np.linalg.inv(K_mat)
-        v_mat = K_mat_inv *q_Vec
-        Delta_uVec = v_mat*Delta_Lambda 
+        v_mat = K_mat_inv @ q_Vec
+        d_uVec = v_mat*Delta_Lambda 
 
-        uVec = uVec * Delta_uVec
+        uVec = uVec + d_uVec
         
         for iIter in range(max_iter):
 
@@ -91,8 +91,8 @@ def solveNonlinLoadControl(problem, load_steps=0.01, max_steps=100, max_iter=30)
             if (res_Vec.dot(res_Vec) < 1.0e-15):
                 break 
             d_res_Vec = (problem.get_residual(Lambda,uVec+load_steps) - res_Vec)/load_steps #Finner endring i residual. (dette er litt fishi)
-            d_uVec = -res_Vec / d_res_Vec
-            uVec = uVec + d_uVec 
+            delta_uVec = -res_Vec / d_res_Vec
+            uVec = uVec + delta_uVec 
             
 
         problem.append_solution(Lambda, uVec)
@@ -183,7 +183,7 @@ class BeamModel:
             ex2 = self.coords[inod2,0]
             ex = np.array([ex1,ex2])
             ey = np.array([self.coords[inod1,1],self.coords[inod2,1]])
-            Ke,f_int_e = CorotBeam.beam2corot_Ke_and_Fe(ex, ey, self.ep,disp_sys[3*iel:3*iel+6])[0]
+            f_int_e = CorotBeam.beam2corot_Ke_and_Fe(ex, ey, self.ep,disp_sys[3*iel:3*iel+6]) [1]
             Edofs = self.Edofs[iel] - 1
             #disp_e = disp_sys[np.ix_(Edofs)] #Denne fungerer ikke, faar:'float' object is not subscriptable (nonlinear)
             #f_int_e = Ke * disp_e
