@@ -61,24 +61,15 @@ def solveArchLength(problem, archLength=0.02, max_steps=50, max_iter=30):
 
 def solveNonlinLoadControl(problem, load_steps=0.01, max_steps=100, max_iter=30):
     num_dofs = problem.get_num_dofs()
+    #uVec   = np.zeros(shape=(num_dofs,))
     uVec   = np.zeros(num_dofs)
-    d_uVec = np.zeros(num_dofs)
+    #d_uVec = np.zeros(shape=(num_dofs,1))
 
     for iStep in range(max_steps):
         
         #TODO: Implement this Predictor: (Almar: Load control, forward euler)
 
         Lambda = load_steps * iStep
-        Lambda_nxt = load_steps * (iStep+1)
-        q_Vec   = problem.get_incremental_load(Lambda)
-        K_mat = problem.get_K_sys(uVec)
-
-        Delta_Lambda = Lambda_nxt-Lambda
-        K_mat_inv = np.linalg.inv(K_mat)
-        v_mat = K_mat_inv *q_Vec
-        Delta_uVec = v_mat*Delta_Lambda 
-
-        uVec = uVec * Delta_uVec
         
         for iIter in range(max_iter):
 
@@ -86,13 +77,16 @@ def solveNonlinLoadControl(problem, load_steps=0.01, max_steps=100, max_iter=30)
             # Husk at load  control betyr: at all kerreksjon er horisontal (lasten holdes konstant i koreksjonen)
             # Her regnes residual derivasjonen altså ikke eksakt, men tilnermes med en delta i load_steps, sikkert ikke like bra
             
+            res_Vec = problem.get_residual(Lambda, uVec)
 
-            res_Vec = problem.get_residual(uVec, Lambda)
             if (res_Vec.dot(res_Vec) < 1.0e-15):
                 break 
-            d_res_Vec = (problem.get_residual(uVec+load_steps,Lambda) - res_Vec)/load_steps #Finner endring i residual. (dette er litt fishi)
-            d_uVec = -res_Vec / d_res_Vec
-            uVec = uVec + d_uVec 
+            #d_res_Vec = (problem.get_residual(Lambda,uVec+load_steps) - res_Vec)/load_steps #Finner endring i residual. (dette er litt fishi)
+            K_mat = problem.get_K_sys(uVec)
+
+            delta_uVec = np.linalg.solve(K_mat, res_Vec)
+            uVec = uVec + delta_uVec
+
             
 
         problem.append_solution(Lambda, uVec)
@@ -113,7 +107,7 @@ def solveLinearSteps(problem, load_steps=0.01, max_steps=100):
 
         q_Vec   = problem.get_incremental_load(Lambda)
 
-        K_mat = problem.get_K_sys(uVec)
+        K_mat = problem.get_K_sys_lin(uVec)
 
         d_q = np.linalg.solve(K_mat, q_Vec)
 
@@ -144,6 +138,31 @@ class BeamModel:
         self.load_history = []
         self.disp_history = []
 
+    def get_K_sys_lin(self, disp_sys):
+        # Build system stiffness matrix for the structure
+        K_sys = np.zeros((self.num_dofs,self.num_dofs))
+
+        for iel in range(self.num_elements):
+            inod1 = self.Enods[iel,0]-1
+            inod2 = self.Enods[iel,1]-1
+            ex1 = self.coords[inod1,0]
+            ex2 = self.coords[inod2,0]
+            ex = np.array([ex1,ex2])
+            ey = np.array([self.coords[inod1,1],self.coords[inod2,1]])
+            Edofs = self.Edofs[iel] - 1
+            Ke = CorotBeam.beam2e(ex, ey, self.ep)
+            #Ke = CorotBeam.beam2corot_Ke_and_Fe(ex, ey, self.ep, disp_sys[np.ix_(Edofs)] )[0] #korotert stivhet
+            K_sys[np.ix_(Edofs,Edofs)] += Ke
+
+        # Set boundary conditions
+        for idof in range(len(self.bc)):
+            idx = self.bc[idof] - 1
+            K_sys[idx,:]   = 0.0
+            K_sys[:,idx]   = 0.0
+            K_sys[idx,idx] = 1.0
+
+        return K_sys
+
     def get_K_sys(self, disp_sys):
         # Build system stiffness matrix for the structure
         K_sys = np.zeros((self.num_dofs,self.num_dofs))
@@ -155,8 +174,9 @@ class BeamModel:
             ex2 = self.coords[inod2,0]
             ex = np.array([ex1,ex2])
             ey = np.array([self.coords[inod1,1],self.coords[inod2,1]])
-            Ke = CorotBeam.beam2e(ex, ey, self.ep)
             Edofs = self.Edofs[iel] - 1
+            #Ke = CorotBeam.beam2e(ex, ey, self.ep)
+            Ke = CorotBeam.beam2corot_Ke_and_Fe(ex, ey, self.ep, disp_sys[np.ix_(Edofs)] )[0] #korotert stivhet
             K_sys[np.ix_(Edofs,Edofs)] += Ke
 
         # Set boundary conditions
@@ -173,7 +193,7 @@ class BeamModel:
         return num_dofs
 
     def get_internal_forces(self, disp_sys):
-        # Build system stiffness matrix for the structure
+        # Build internal force vector for the structure
         f_int_sys = np.zeros(self.num_dofs)
 
         for iel in range(self.num_elements):
@@ -183,11 +203,12 @@ class BeamModel:
             ex2 = self.coords[inod2,0]
             ex = np.array([ex1,ex2])
             ey = np.array([self.coords[inod1,1],self.coords[inod2,1]])
-            Ke = CorotBeam.beam2e(ex, ey, self.ep)[0]
-            Edofs = self.Edofs[iel] - 1
-            disp_e = disp_sys[np.ix_(Edofs)]
-            f_int_e = Ke * disp_e
-            f_int_sys[np.ix_(Edofs)] += f_int_e
+
+            Edofs = self.Edofs[iel] - 1 #Tror ikke vi har forstaatt Edofs helt. i=1 -> Edofs = [0,1,2,3,4,5], i=2 -> Edofs = [3,4,5,6,7,8]
+            f_int_e = CorotBeam.beam2corot_Ke_and_Fe(ex, ey, self.ep, disp_sys[np.ix_(Edofs)])[1] #korotert internal force [6x1]
+            #disp_e = disp_sys[np.ix_(Edofs)] 
+            #f_int_e = Ke * disp_e
+            f_int_sys[np.ix_(Edofs)] += f_int_e #Kan hende dette maa endres [num_dofs,1]
 
         return f_int_sys
 
@@ -199,7 +220,13 @@ class BeamModel:
 
     def get_residual(self,loadFactor,disp_sys):
         f_int = self.get_internal_forces(disp_sys)
-        f_res = self.get_external_load(loadFactor) + self.get_internal_forces(disp_sys)
+        f_ext = self.get_external_load(loadFactor)
+        f_res = f_ext - f_int
+        # Set boundary conditions
+        for idof in range(len(self.bc)):
+            idx = self.bc[idof] - 1
+            f_res[idx]   = 0.0
+
         return f_res
 
     def append_solution(self, loadFactor, disp_sys):
