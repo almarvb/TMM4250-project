@@ -16,7 +16,7 @@ class DeepArchModel(sbeam.BeamModel):
         self.num_elements = num_nodes - 1
         self.num_dofs = self.num_nodes * 3
         self.E = 2.1e11 #Youngs modulus N/m^2
-        self.A = 0.1 #Area (assume unit width) m^2
+        self.A = 0.1 #Area (unit width) m^2
         self.I = 1/12000 #Moment of inertia m^4
         self.ep = np.array([self.E, self.A, self.I])
         self.L = 1.6 # support distance m
@@ -61,8 +61,8 @@ num_nodes = 9
 beamModel = DeepArchModel(num_nodes)
 #beamModel = sbeam.SimplySupportedBeamModel(num_nodes)
 
-#sbeam.solveLinearSteps(beamModel)
-sbeam.solveArchLength(beamModel)
+sbeam.solveLinearSteps(beamModel)
+#sbeam.solveArchLength(beamModel)
 
 num_steps = len(beamModel.load_history)
 
