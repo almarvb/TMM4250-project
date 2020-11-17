@@ -35,13 +35,11 @@ def beam2local_def_disp(ex,ey, disp_global):
     diffy = disp_global[4]-disp_global[1]
     Ld = L0 + math.sqrt(diffy**2+diffx**2)
 
-    # TODO: Quite a bit here (Almar: tror jeg har gjort alt. men maa sjekkes)
+    # TODO: Quite a bit here (Almar: tror jeg har gjort alt)
     ex0 = np.array([[(ex[1]-ex[0])/L0],
                     [(ey[1]-ey[0])/L0]])
     exn1 = ((ex[1]+disp_global[3])-(ex[0]+disp_global[0]))/Ld
     exn2 = ((ey[1]+disp_global[4])-(ey[0]+disp_global[1]))/Ld
-    exn = np.array([[exn1],
-                    [exn2]])
     eyn = np.array([[-exn2],
                     [exn1]])
     R1 = rot_matrix(disp_global[2])
