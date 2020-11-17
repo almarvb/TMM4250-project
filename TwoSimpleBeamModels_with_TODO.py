@@ -61,7 +61,8 @@ def solveArchLength(problem, archLength=0.02, max_steps=50, max_iter=30):
 
 def solveNonlinLoadControl(problem, load_steps=0.01, max_steps=100, max_iter=30):
     num_dofs = problem.get_num_dofs()
-    uVec   = np.zeros(shape=(num_dofs,))
+    #uVec   = np.zeros(shape=(num_dofs,))
+    uVec   = np.zeros(num_dofs)
     #d_uVec = np.zeros(shape=(num_dofs,1))
 
     for iStep in range(max_steps):
@@ -69,16 +70,6 @@ def solveNonlinLoadControl(problem, load_steps=0.01, max_steps=100, max_iter=30)
         #TODO: Implement this Predictor: (Almar: Load control, forward euler)
 
         Lambda = load_steps * iStep
-        Lambda_nxt = load_steps * (iStep+1)
-        q_Vec   = problem.get_incremental_load(Lambda)
-        K_mat = problem.get_K_sys(uVec)
-
-        Delta_Lambda = Lambda_nxt-Lambda
-        K_mat_inv = np.linalg.inv(K_mat)
-        v_mat = K_mat_inv @ q_Vec
-        d_uVec = v_mat * Delta_Lambda
-
-        uVec = uVec + d_uVec
         
         for iIter in range(max_iter):
 
@@ -86,16 +77,16 @@ def solveNonlinLoadControl(problem, load_steps=0.01, max_steps=100, max_iter=30)
             # Husk at load  control betyr: at all kerreksjon er horisontal (lasten holdes konstant i koreksjonen)
             # Her regnes residual derivasjonen altså ikke eksakt, men tilnermes med en delta i load_steps, sikkert ikke like bra
             
-
             res_Vec = problem.get_residual(Lambda, uVec)
+
             if (res_Vec.dot(res_Vec) < 1.0e-15):
                 break 
             #d_res_Vec = (problem.get_residual(Lambda,uVec+load_steps) - res_Vec)/load_steps #Finner endring i residual. (dette er litt fishi)
-            delta_uVec = K_mat_inv @ (-res_Vec)
-            uVec = uVec + delta_uVec
-            
             K_mat = problem.get_K_sys(uVec)
-            K_mat_inv = np.linalg.inv(K_mat) 
+
+            delta_uVec = np.linalg.solve(K_mat, res_Vec)
+            uVec = uVec + delta_uVec
+
             
 
         problem.append_solution(Lambda, uVec)
@@ -229,7 +220,13 @@ class BeamModel:
 
     def get_residual(self,loadFactor,disp_sys):
         f_int = self.get_internal_forces(disp_sys)
-        f_res = self.get_external_load(loadFactor) + f_int
+        f_ext = self.get_external_load(loadFactor)
+        f_res = f_ext - f_int
+        # Set boundary conditions
+        for idof in range(len(self.bc)):
+            idx = self.bc[idof] - 1
+            f_res[idx]   = 0.0
+
         return f_res
 
     def append_solution(self, loadFactor, disp_sys):
