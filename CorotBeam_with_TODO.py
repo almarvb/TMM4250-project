@@ -92,16 +92,26 @@ def beam2corot_Ke_and_Fe(ex,ey,ep, disp_global): #
     I = ep[2]
 
 
-                      #TODO
     disp_def_local = beam2local_def_disp(ex,ey,disp_global)
 
     Kle = beam2local_stiff(L0,ep) # Element material stiffness of undeformed ghost element in local
-
+    '''
     a = np.array([[Kle[2,2],Kle[5,2]],[Kle[5,2],Kle[5,5]]])
     b = np.array([[disp_def_local[2]],[disp_def_local[5]]])
     M_vec = a @ b
-    V = np.asscalar((M_vec[0] + M_vec[1])/Ld)
+    V = np.asscalar((M_vec[0] + M_vec[1])/Ld) #Calculating internal forces based on linear stiffness formulation
     N = E * A * (Ld - L0) / L0
+    '''
+    P_local = np.array([[ 1/2, 0, 0, -1/2, 0, 0 ],
+                        [ 0, 0, 0, 0, 0, 0,],
+                        [ 0, 0, 1, 0, 0, 0 ],
+                        [-1/2, 0, 0, 1/2, 0, 0 ],
+                        [ 0, 0, 0, 0, 0, 0, ],
+                        [ 0, 0, 0, 0, 0, 1]])
+    f_int_lin = P_local.T @ Kle @ disp_def_local #internal forces from linear stiffness
+    N = f_int_lin[3]
+    V = f_int_lin[4]
+
     Kg_sym = np.array([
                      [ 0        , -V/(2*Ld), 0 , 0       , V/(2*Ld) , 0 ],
                      [ -V/(2*Ld), N/Ld     , 0 , V/(2*Ld), -N/Ld    , 0 ],
@@ -113,12 +123,7 @@ def beam2corot_Ke_and_Fe(ex,ey,ep, disp_global): #
 
     Te = beam2corot_Te(ex,ey)
 
-    P_local = np.array([[ 1/2, 0, 0, -1/2, 0, 0 ],
-                        [ 0, 0, 0, 0, 0, 0,],
-                        [ 0, 0, 1, 0, 0, 0 ],
-                        [-1/2, 0, 0, 1/2, 0, 0 ],
-                        [ 0, 0, 0, 0, 0, 0, ],
-                        [ 0, 0, 0, 0, 0, 1]])
+
 
     Ke_g = Te.T @ Kg_sym @ Te #geometric stiffness, global coordinates
     Ke_m = Te.T @ Kle @ P_local @ Te #material stiffness, global coordinates
