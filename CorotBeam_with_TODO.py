@@ -87,15 +87,15 @@ def beam2corot_Ke_and_Fe(ex,ey,ep, disp_global): #
     eVec12_def = np.array([ex_def[1] - ex_def[0], ey_def[1] - ey_def[0]])
     Ld = math.sqrt(eVec12_def @ eVec12_def) #Deformed element length
 
-    E = ep[0]
-    A = ep[1]
-    I = ep[2]
 
 
     disp_def_local = beam2local_def_disp(ex,ey,disp_global)
 
     Kle = beam2local_stiff(L0,ep) # Element material stiffness of undeformed ghost element in local
     '''
+    E = ep[0]
+    A = ep[1]
+    I = ep[2]
     a = np.array([[Kle[2,2],Kle[5,2]],[Kle[5,2],Kle[5,5]]])
     b = np.array([[disp_def_local[2]],[disp_def_local[5]]])
     M_vec = a @ b
@@ -108,8 +108,8 @@ def beam2corot_Ke_and_Fe(ex,ey,ep, disp_global): #
                         [-1/2, 0, 0, 1/2, 0, 0 ],
                         [ 0, 0, 0, 0, 0, 0, ],
                         [ 0, 0, 0, 0, 0, 1]])
-    f_int_lin = P_local.T @ Kle @ disp_def_local #internal forces from linear stiffness
-    N = f_int_lin[3]
+    f_int_lin = P_local.T @ Kle @ disp_def_local #find internal forces from linear stiffness
+    N = f_int_lin[3] #pick out normal force and shear force to build geometric stiffness matrix
     V = f_int_lin[4]
 
     Kg_sym = np.array([
@@ -119,15 +119,12 @@ def beam2corot_Ke_and_Fe(ex,ey,ep, disp_global): #
                      [ 0        , V/(2*Ld) , 0 , 0       , -V/(2*Ld), 0 ],
                      [ V/(2*Ld) , -N/Ld    , 0 ,-V/(2*Ld), N/Ld     , 0 ],
                      [0         , 0        , 0 , 0       , 0        , 0 ]
-                     ]) # element symmetric geometric stiffness matrix
+                     ]) #build element symmetric geometric stiffness matrix
 
-    Te = beam2corot_Te(ex,ey)
-
-
+    Te = beam2corot_Te(ex,ey) #Transformation matrix
 
     Ke_g = Te.T @ Kg_sym @ Te #geometric stiffness, global coordinates
     Ke_m = Te.T @ Kle @ P_local @ Te #material stiffness, global coordinates
-
 
     Ke_global =  Ke_m  + Ke_g   #element stiffness, global coordinates
     fe_int_global = Ke_global @ disp_global #Internal forces, global coordinates

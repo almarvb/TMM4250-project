@@ -116,7 +116,7 @@ def solveLinearSteps(problem, load_steps=0.01, max_steps=100):
 
         q_Vec   = problem.get_incremental_load(Lambda)
 
-        K_mat = problem.get_K_sys(uVec)
+        K_mat = problem.get_K_sys_lin(uVec)
 
         d_q = np.linalg.solve(K_mat, q_Vec)
 
@@ -146,6 +146,31 @@ class BeamModel:
         self.plotScaleFactor = 1.0
         self.load_history = []
         self.disp_history = []
+
+    def get_K_sys_lin(self, disp_sys):
+        # Build system stiffness matrix for the structure
+        K_sys = np.zeros((self.num_dofs,self.num_dofs))
+
+        for iel in range(self.num_elements):
+            inod1 = self.Enods[iel,0]-1
+            inod2 = self.Enods[iel,1]-1
+            ex1 = self.coords[inod1,0]
+            ex2 = self.coords[inod2,0]
+            ex = np.array([ex1,ex2])
+            ey = np.array([self.coords[inod1,1],self.coords[inod2,1]])
+            Edofs = self.Edofs[iel] - 1
+            Ke = CorotBeam.beam2e(ex, ey, self.ep)
+            #Ke = CorotBeam.beam2corot_Ke_and_Fe(ex, ey, self.ep, disp_sys[np.ix_(Edofs)] )[0] #korotert stivhet
+            K_sys[np.ix_(Edofs,Edofs)] += Ke
+
+        # Set boundary conditions
+        for idof in range(len(self.bc)):
+            idx = self.bc[idof] - 1
+            K_sys[idx,:]   = 0.0
+            K_sys[:,idx]   = 0.0
+            K_sys[idx,idx] = 1.0
+
+        return K_sys
 
     def get_K_sys(self, disp_sys):
         # Build system stiffness matrix for the structure
