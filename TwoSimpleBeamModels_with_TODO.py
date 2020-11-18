@@ -61,13 +61,12 @@ def solveArchLength(problem, archLength=0.02, max_steps=50, max_iter=30):
 
 def solveNonlinLoadControl(problem, load_steps=0.01, max_steps=100, max_iter=30):
     num_dofs = problem.get_num_dofs()
-    #uVec   = np.zeros(shape=(num_dofs,))
+    
     uVec   = np.zeros(num_dofs)
-    #d_uVec = np.zeros(shape=(num_dofs,1))
-
+    
     for iStep in range(max_steps):
         
-        #TODO: Implement this Predictor: (Almar: Load control, forward euler)
+        #(Almar: ooker lasten (lambda) med 0.01 for hvert skritt)
 
         Lambda = load_steps * iStep
         
@@ -75,13 +74,12 @@ def solveNonlinLoadControl(problem, load_steps=0.01, max_steps=100, max_iter=30)
 
             # TODO: Implement this Korrektor (Almar: Newton metode her)
             # Husk at load  control betyr: at all kerreksjon er horisontal (lasten holdes konstant i koreksjonen)
-            # Her regnes residual derivasjonen altså ikke eksakt, men tilnermes med en delta i load_steps, sikkert ikke like bra
             
             res_Vec = problem.get_residual(Lambda, uVec)
 
             if (res_Vec.dot(res_Vec) < 1.0e-15):
                 break 
-            #d_res_Vec = (problem.get_residual(Lambda,uVec+load_steps) - res_Vec)/load_steps #Finner endring i residual. (dette er litt fishi)
+            
             K_mat = problem.get_K_sys(uVec)
 
             delta_uVec = np.linalg.solve(K_mat, res_Vec)
@@ -150,8 +148,8 @@ class BeamModel:
             ex = np.array([ex1,ex2])
             ey = np.array([self.coords[inod1,1],self.coords[inod2,1]])
             Edofs = self.Edofs[iel] - 1
+            
             Ke = CorotBeam.beam2e(ex, ey, self.ep)
-            #Ke = CorotBeam.beam2corot_Ke_and_Fe(ex, ey, self.ep, disp_sys[np.ix_(Edofs)] )[0] #korotert stivhet
             K_sys[np.ix_(Edofs,Edofs)] += Ke
 
         # Set boundary conditions
@@ -176,6 +174,7 @@ class BeamModel:
             ey = np.array([self.coords[inod1,1],self.coords[inod2,1]])
             Edofs = self.Edofs[iel] - 1
             #Ke = CorotBeam.beam2e(ex, ey, self.ep)
+            
             Ke = CorotBeam.beam2corot_Ke_and_Fe(ex, ey, self.ep, disp_sys[np.ix_(Edofs)] )[0] #korotert stivhet
             K_sys[np.ix_(Edofs,Edofs)] += Ke
 
@@ -204,11 +203,11 @@ class BeamModel:
             ex = np.array([ex1,ex2])
             ey = np.array([self.coords[inod1,1],self.coords[inod2,1]])
 
-            Edofs = self.Edofs[iel] - 1 #Tror ikke vi har forstaatt Edofs helt. i=1 -> Edofs = [0,1,2,3,4,5], i=2 -> Edofs = [3,4,5,6,7,8]
+            Edofs = self.Edofs[iel] - 1 
             f_int_e = CorotBeam.beam2corot_Ke_and_Fe(ex, ey, self.ep, disp_sys[np.ix_(Edofs)])[1] #korotert internal force [6x1]
             #disp_e = disp_sys[np.ix_(Edofs)] 
             #f_int_e = Ke * disp_e
-            f_int_sys[np.ix_(Edofs)] += f_int_e #Kan hende dette maa endres [num_dofs,1]
+            f_int_sys[np.ix_(Edofs)] += f_int_e 
 
         return f_int_sys
 
@@ -222,6 +221,7 @@ class BeamModel:
         f_int = self.get_internal_forces(disp_sys)
         f_ext = self.get_external_load(loadFactor)
         f_res = f_ext - f_int
+        
         # Set boundary conditions
         for idof in range(len(self.bc)):
             idx = self.bc[idof] - 1
