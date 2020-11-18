@@ -357,7 +357,7 @@ class CantileverWithEndMoment(BeamModel):
 
         # The external incremental load (linear scaling with lambda)
         self.inc_load = np.zeros(self.num_dofs)
-        #self.inc_load[-1] = 1.0e6
+        #self.inc_load[-1] = 1.0e8
         self.inc_load[-1] = MomentFullCircle
         self.plotDof = self.num_dofs - 1 # Setting which dof for the Load-disp curve: y disp of last node
 

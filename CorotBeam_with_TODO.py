@@ -91,11 +91,13 @@ def beam2corot_Ke_and_Fe(ex,ey,ep, disp_global):
 
     Kle = beam2local_stiff(L0,ep) # Element material stiffness of undeformed ghost element in local
     K_loc = Kle
-    for i in range(30):
+    R = np.array([1,1,1,1,1,1])
+    
+    while (R.dot(R) > 1.0e-9):
 
         f_int_lin = K_loc @ disp_def_local #find internal forces from linear stiffness
         N = f_int_lin[3] #pick out normal force and shear force to build geometric stiffness matrix
-        V = f_int_lin[4]
+        V = f_int_lin[4]  #Nå oppdateres kun V for hver iterasjon, N blir konstant og kjempe stor!!!! <--- SE På DETTE SVERRE
 
         Kg_sym = np.array([
                         [ 0        , -V/(2*Ld), 0 , 0       , V/(2*Ld) , 0 ],
@@ -108,8 +110,6 @@ def beam2corot_Ke_and_Fe(ex,ey,ep, disp_global):
 
         K_loc = Kle + Kg_sym
         R = f_int_lin - K_loc @ disp_def_local
-        if (R.dot(R) < 1.0e-15):
-                break 
         
     Te = beam2corot_Te(ex,ey) #Transformation matrix
 
@@ -117,7 +117,8 @@ def beam2corot_Ke_and_Fe(ex,ey,ep, disp_global):
     #Ke_m = Te.T @ Kle @ Te #material stiffness, global coordinates
 
     #Ke_global =  Ke_m  + Ke_g   #element stiffness, global coordinates
-    Ke_global =  Te.T @ K_loc @ Te
+    #Ke_global =  Te.T @ K_loc @ Te
+    Ke_global = Te.T @ Kle @ Te  # Tar kun med matrial stivhet
     fe_int_global = Ke_global @ disp_global #Internal forces, global coordinates
 
     return Ke_global, fe_int_global
