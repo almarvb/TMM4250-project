@@ -59,7 +59,7 @@ def solveArchLength(problem, archLength=0.02, max_steps=50, max_iter=30):
         problem.append_solution(Lambda, uVec)
         print(" ")
 
-def solveNonlinLoadControl(problem, load_steps=0.01, max_steps=10, max_iter=30):
+def solveNonlinLoadControl(problem, load_steps, max_steps, max_iter):
     num_dofs = problem.get_num_dofs()
     
     uVec   = np.zeros(num_dofs)
