@@ -1,11 +1,8 @@
 import numpy as np
+import math
 
+R = np.array([1,-2,0,0,0,0])
 
-num_dofs = 27
-uVec   = np.zeros(shape=(num_dofs,))
-#uVec = uVec.T
-print ( uVec)
-for iel in range(8):
+result = R.dot(R) < 1 
 
-    uLiten =uVec[3*iel:3*iel+6]
-    print (uLiten)
+print (result)
