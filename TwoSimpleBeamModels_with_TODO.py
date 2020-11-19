@@ -59,7 +59,7 @@ def solveArchLength(problem, archLength=0.02, max_steps=50, max_iter=30):
         problem.append_solution(Lambda, uVec)
         print(" ")
 
-def solveNonlinLoadControl(problem, load_steps=0.01, max_steps=100, max_iter=30):
+def solveNonlinLoadControl(problem, load_steps=0.01, max_steps=10, max_iter=30):
     num_dofs = problem.get_num_dofs()
     
     uVec   = np.zeros(num_dofs)
@@ -69,6 +69,8 @@ def solveNonlinLoadControl(problem, load_steps=0.01, max_steps=100, max_iter=30)
         #(Almar: ooker lasten (lambda) med 0.01 for hvert skritt)
 
         Lambda = load_steps * iStep
+
+        bConverged = False
         
         for iIter in range(max_iter):
 
@@ -77,20 +79,26 @@ def solveNonlinLoadControl(problem, load_steps=0.01, max_steps=100, max_iter=30)
             
             res_Vec = problem.get_residual(Lambda, uVec)
 
-            if (res_Vec.dot(res_Vec) < 1.0e-15):
+            resNorm = res_Vec.dot(res_Vec)
+            if (res_Vec.dot(res_Vec) < 1.0e-10):
+                bConverged = True
                 break 
             
             K_mat = problem.get_K_sys(uVec)
 
             delta_uVec = np.linalg.solve(K_mat, res_Vec)
             uVec = uVec + delta_uVec
+            print("iter {:}  resNorm= {:12.3e}".format(iIter, resNorm))
 
             
 
-        problem.append_solution(Lambda, uVec)
-        print(" ")
 
-        problem.append_solution(Lambda, uVec)
+
+        if (not bConverged):
+            print("Did not converge !!!!!!!!")
+            break
+
+        problem.append_solution(Lambda, deepcopy(uVec))
         print("Non-Linear load step {:}  load_factor= {:12.3e}".format(iStep, Lambda))
 
 
@@ -223,6 +231,7 @@ class BeamModel:
         f_res = f_ext - f_int
         
         # Set boundary conditions
+
         for idof in range(len(self.bc)):
             idx = self.bc[idof] - 1
             f_res[idx]   = 0.0

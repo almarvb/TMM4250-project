@@ -39,7 +39,7 @@ print("End")
 
 #--------------------------------------------------------------------------------------------
 # ------------------ Preform non-linear solution (load controll + Newton itterations )
-num_nodes = 3
+num_nodes = 2
 beamModel = sbeam.CantileverWithEndMoment(num_nodes)
 #beamModel = CantileverWithEndMoment(num_nodes)
 
