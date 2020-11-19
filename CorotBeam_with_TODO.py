@@ -31,17 +31,17 @@ def beam2local_def_disp(ex,ey, disp_global):
     eVec12 = np.array([ex[1] - ex[0], ey[1] - ey[0]])
     L0 = math.sqrt(eVec12 @ eVec12)
 
-    diffx = disp_global[3]-disp_global[0]
-    diffy = disp_global[4]-disp_global[1]
-    Ld = L0 + math.sqrt(diffy**2+diffx**2)
-
     # TODO: Quite a bit here (Almar: tror jeg har gjort alt)
     ex0 = np.array([[(ex[1]-ex[0])/L0],
                     [(ey[1]-ey[0])/L0]])
-    exn1 = ((ex[1]+disp_global[3])-(ex[0]+disp_global[0]))/Ld
-    exn2 = ((ey[1]+disp_global[4])-(ey[0]+disp_global[1]))/Ld
-    eyn = np.array([[-exn2],
-                    [exn1]])
+    exn = np.array([[(ex[1]+disp_global[3])-(ex[0]+disp_global[0])],
+                    [(ey[1]+disp_global[4])-(ey[0]+disp_global[1])]])
+
+    Ld = math.sqrt(exn.T @ exn)
+    exn /= Ld
+
+    eyn = np.array([[-exn[1,0]],
+                    [exn[0,0]]])
     R1 = rot_matrix(disp_global[2])
     R2 = rot_matrix(disp_global[5])
     t1 = R1 @ ex0
@@ -106,14 +106,14 @@ def beam2corot_Ke_and_Fe(ex,ey,ep, disp_global):
                         [0         , 0        , 0 , 0       , 0        , 0 ]
                         ]) #build element symmetric geometric stiffness matrix
 
-    Te = beam2corot_Te(ex,ey) #Transformation matrix
+    Te = beam2corot_Te(ex_def,ey_def) #Transformation matrix
 
     #Ke_g = Te.T @ Kg_sym @ Te #geometric stiffness, global coordinates
     #Ke_m = Te.T @ Kle @ Te #material stiffness, global coordinates
 
     #Ke_global =  Ke_m  + Ke_g   #element stiffness, global coordinates
     K_loc = Kle + Kg_sym
-    K_loc = Kle   #TODO, delete this !!!
+    #K_loc = Kle   #TODO, delete this !!!
     Ke_global =  Te.T @ K_loc @ Te
     #Ke_global = Te.T @ Kle @ Te  # Tar kun med matrial stivhet
     fe_int_global = Te.T @ f_int_lin #Internal forces, global coordinates

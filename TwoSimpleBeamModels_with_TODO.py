@@ -28,13 +28,14 @@ def solveArchLength(problem, archLength=0.02, max_steps=50, max_iter=30):
         w_q0 = np.linalg.solve(K_mat,q_Vec)
         f = math.sqrt(1 + w_q0.T @ w_q0)
 
-        if (w_q0.T @ uVec) > 1:
+        if (w_q0.T @ d_q_prev) >= 0.0:
             delta_Lambda = archLength / f
         else:
             delta_Lambda = - archLength / f
 
+        d_q_prev = (delta_Lambda * w_q0)
         Lambda += delta_Lambda
-        uVec += (delta_Lambda * w_q0)
+        uVec += d_q_prev
 
         for iIter in range(max_iter):
             res_Vec = problem.get_residual(Lambda, uVec)
@@ -80,7 +81,8 @@ def solveNonlinLoadControl(problem, load_steps, max_steps, max_iter):
             res_Vec = problem.get_residual(Lambda, uVec)
 
             resNorm = res_Vec.dot(res_Vec)
-            if (res_Vec.dot(res_Vec) < 1.0e-10):
+            print("iter {:}  resNorm= {:12.3e}".format(iIter, resNorm))  
+            if (resNorm < 1.0e-8):
                 bConverged = True
                 break 
             
@@ -88,7 +90,7 @@ def solveNonlinLoadControl(problem, load_steps, max_steps, max_iter):
 
             delta_uVec = np.linalg.solve(K_mat, res_Vec)
             uVec = uVec + delta_uVec
-            print("iter {:}  resNorm= {:12.3e}".format(iIter, resNorm))
+ 
 
             
 
@@ -97,9 +99,9 @@ def solveNonlinLoadControl(problem, load_steps, max_steps, max_iter):
         if (not bConverged):
             print("Did not converge !!!!!!!!")
             break
-
-        problem.append_solution(Lambda, deepcopy(uVec))
-        print("Non-Linear load step {:}  load_factor= {:12.3e}".format(iStep, Lambda))
+        else:
+            problem.append_solution(Lambda, deepcopy(uVec))
+            print("Non-Linear load step {:}  load_factor= {:12.3e}".format(iStep, Lambda))
 
 
 
