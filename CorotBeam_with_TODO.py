@@ -117,8 +117,8 @@ def beam2corot_Ke_and_Fe(ex,ey,ep, disp_global):
     #Ke_m = Te.T @ Kle @ Te #material stiffness, global coordinates
 
     #Ke_global =  Ke_m  + Ke_g   #element stiffness, global coordinates
-    #Ke_global =  Te.T @ K_loc @ Te
-    Ke_global = Te.T @ Kle @ Te  # Tar kun med matrial stivhet
+    Ke_global =  Te.T @ K_loc @ Te
+    #Ke_global = Te.T @ Kle @ Te  # Tar kun med matrial stivhet
     fe_int_global = Ke_global @ disp_global #Internal forces, global coordinates
 
     return Ke_global, fe_int_global
