@@ -45,7 +45,7 @@ class DeepArchModel(sbeam.BeamModel):
             self.Enods[i,:] = np.array([1,2],dtype=int) + i
 
         # Fix x and y at first node and y at last node
-        self.bc = np.array([1,2,(self.num_nodes*3 -1)],dtype=int)
+        self.bc = np.array([1,2,(self.num_nodes*3 -1), (self.num_nodes*3 -2)],dtype=int)
 
         # The external incremental load (linear scaling with lambda)
         mid_node      = (self.num_nodes +1) // 2
