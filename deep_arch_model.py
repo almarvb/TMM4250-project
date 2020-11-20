@@ -30,7 +30,7 @@ class DeepArchModel(sbeam.BeamModel):
 
         self.coords = np.zeros((self.num_nodes,2)) # Coordinates for all the nodes
         self.dispState = np.zeros(self.num_nodes*3)
-        self.Ndofs  = np.zeros((self.num_nodes,3)) # Dofs for all the nodes
+        self.Ndofs = np.zeros((self.num_nodes,3)) # Dofs for all the nodes
 
         for i in range(self.num_nodes):
             theta = theta_0 + i*theta_el
@@ -51,12 +51,12 @@ class DeepArchModel(sbeam.BeamModel):
         mid_node      = (self.num_nodes +1) // 2
         mid_y_dof_idx = (mid_node-1) * 3 + 1
         self.inc_load = np.zeros(self.num_dofs)
-        self.inc_load[mid_y_dof_idx] = -500.0e+6
+        self.inc_load[mid_y_dof_idx] = -500.0e+7
         self.plotDof = mid_y_dof_idx + 1
 
 # ------------------ Perform linear solution
 
-num_nodes = 3
+num_nodes = 5
 #beamModel = sbeam.CantileverWithEndMoment(num_nodes)
 beamModel = DeepArchModel(num_nodes)
 
@@ -64,8 +64,12 @@ load_steps=0.01
 N_steps=50 
 max_iter=30
 
+archLength=0.02
+max_steps=50
+max_iter=30
 #sbeam.solveNonlinLoadControl(beamModel,load_steps, N_steps, max_iter)
-sbeam.solveArchLength(beamModel)
+sbeam.solveArchLength(beamModel, archLength, max_steps, max_iter)
+#sbeam.solveLinearSteps(beamModel)
 
 num_steps = len(beamModel.load_history)
 

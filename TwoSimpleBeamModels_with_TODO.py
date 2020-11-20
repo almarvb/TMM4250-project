@@ -12,7 +12,7 @@ import matplotlib.animation as anm
 from copy import deepcopy
 # ----- Topology -------------------------------------------------
 
-def solveArchLength(problem, archLength=0.02, max_steps=50, max_iter=30):
+def solveArchLength(problem, archLength, max_steps, max_iter):
     num_dofs = problem.get_num_dofs()
     uVec = np.zeros(num_dofs)
     res_Vec = np.zeros(num_dofs)
@@ -37,19 +37,20 @@ def solveArchLength(problem, archLength=0.02, max_steps=50, max_iter=30):
         Lambda += delta_Lambda
         uVec += d_q_prev
         bConverged = False
-
+        res_Vec = problem.get_residual(Lambda, uVec)
         for iIter in range(max_iter):
-            res_Vec = problem.get_residual(Lambda, uVec)
+
             K_mat = problem.get_K_sys(uVec)
             q_Vec = problem.get_incremental_load(Lambda)
 
             w_q = np.linalg.solve(K_mat,q_Vec)
             w_r = np.linalg.solve(K_mat,-res_Vec)
 
-            d_Lambda = - w_q.T @ w_r / (1 + w_q.T @ w_r)
+            d_Lambda = - (w_q.T @ w_r) / (1 + w_q.T @ w_q)
 
             Lambda += d_Lambda
-            uVec += w_r + d_Lambda*w_q
+            d_uVec = w_r + d_Lambda*w_q
+            uVec += (d_uVec)
 
             res_Vec = problem.get_residual(Lambda , uVec)
             resNorm = res_Vec.dot(res_Vec)
