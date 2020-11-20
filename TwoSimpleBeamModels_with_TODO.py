@@ -36,6 +36,7 @@ def solveArchLength(problem, archLength=0.02, max_steps=50, max_iter=30):
         d_q_prev = (delta_Lambda * w_q0)
         Lambda += delta_Lambda
         uVec += d_q_prev
+        bConverged = False
 
         for iIter in range(max_iter):
             res_Vec = problem.get_residual(Lambda, uVec)
@@ -45,20 +46,24 @@ def solveArchLength(problem, archLength=0.02, max_steps=50, max_iter=30):
             w_q = np.linalg.solve(K_mat,q_Vec)
             w_r = np.linalg.solve(K_mat,-res_Vec)
 
-
             d_Lambda = - w_q.T @ w_r / (1 + w_q.T @ w_r)
 
             Lambda += d_Lambda
             uVec += w_r + d_Lambda*w_q
 
-            # TODO: Implement this corrector step, (sverre: trur eg er ferdig, men funker ikkje endo)
-
             res_Vec = problem.get_residual(Lambda , uVec)
-            if (res_Vec.dot(res_Vec) < 1.0e-15):  #check if residual is small enough
+            resNorm = res_Vec.dot(res_Vec)
+            print("iter {:}  resNorm= {:12.3e}".format(iIter, resNorm))
+            if (resNorm < 1.0e-15):
+                bConverged = True#check if residual is small enough
                 break
+        if (not bConverged):
+            print("Did not converge !!!!!!!!")
+            break
+        else:
+            problem.append_solution(Lambda, deepcopy(uVec))
+            print("Arc Length step {:}  load_factor= {:12.3e}".format(iStep, Lambda))
 
-        problem.append_solution(Lambda, uVec)
-        print(" ")
 
 def solveNonlinLoadControl(problem, load_steps, max_steps, max_iter):
     num_dofs = problem.get_num_dofs()
@@ -90,10 +95,6 @@ def solveNonlinLoadControl(problem, load_steps, max_steps, max_iter):
 
             delta_uVec = np.linalg.solve(K_mat, res_Vec)
             uVec = uVec + delta_uVec
- 
-
-            
-
 
 
         if (not bConverged):
