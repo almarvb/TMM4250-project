@@ -17,12 +17,12 @@ def solveArchLength(problem, archLength, max_steps, max_iter):
     uVec = np.zeros(num_dofs)
     res_Vec = np.zeros(num_dofs)
     Lambda = 0.0
-
+    q_Vec = problem.get_incremental_load(Lambda)
     d_q_prev = np.zeros(num_dofs)
 
     for iStep in range(max_steps):
         #TODO: Implement this predictor step, (sverre: trur eg er ferdig)
-        q_Vec = problem.get_incremental_load(Lambda)
+
         K_mat = problem.get_K_sys(uVec)
 
         w_q0 = np.linalg.solve(K_mat,q_Vec)
@@ -41,7 +41,6 @@ def solveArchLength(problem, archLength, max_steps, max_iter):
         for iIter in range(max_iter):
 
             K_mat = problem.get_K_sys(uVec)
-            q_Vec = problem.get_incremental_load(Lambda)
 
             w_q = np.linalg.solve(K_mat,q_Vec)
             w_r = np.linalg.solve(K_mat,-res_Vec)

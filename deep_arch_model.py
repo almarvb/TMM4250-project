@@ -61,13 +61,11 @@ num_nodes = 5
 beamModel = DeepArchModel(num_nodes)
 
 load_steps=0.01 
-N_steps=50 
-max_iter=30
 
 archLength=0.02
 max_steps=50
 max_iter=30
-#sbeam.solveNonlinLoadControl(beamModel,load_steps, N_steps, max_iter)
+#sbeam.solveNonlinLoadControl(beamModel,load_steps, max_steps, max_iter)
 sbeam.solveArchLength(beamModel, archLength, max_steps, max_iter)
 #sbeam.solveLinearSteps(beamModel)
 

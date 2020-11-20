@@ -41,12 +41,13 @@ print("End")
 # ------------------ Preform non-linear solution (load controll + Newton itterations )
 num_nodes = 9
 beamModel = sbeam.CantileverWithEndMoment(num_nodes)
-load_steps=0.01 
-N_steps=200 
+load_steps=0.01
+archLength = 0.02
+max_steps=200
 max_iter=30
 #beamModel = CantileverWithEndMoment(num_nodes)
-
-sbeam.solveNonlinLoadControl(beamModel,load_steps, N_steps, max_iter)
+#sbeam.solveArchLength(beamModel, archLength, max_steps, max_iter)
+sbeam.solveNonlinLoadControl(beamModel,load_steps, max_steps, max_iter)
 #Nonlinear load Control, with newton steps
 
 num_steps = len(beamModel.load_history)
