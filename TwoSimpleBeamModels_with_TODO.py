@@ -19,10 +19,10 @@ def solveArchLength(problem, archLength, max_steps, max_iter):
     Lambda = 0.0
 
     v_0 = np.zeros(num_dofs)
-
+    q_Vec = problem.get_incremental_load(Lambda)
     for iStep in range(max_steps):
         #TODO: Implement this predictor step, (sverre: trur eg er ferdig)
-        q_Vec = problem.get_external_load(Lambda)
+
         K_mat = problem.get_K_sys(uVec)
 
         w_q0 = np.linalg.solve(K_mat,q_Vec)
@@ -41,8 +41,8 @@ def solveArchLength(problem, archLength, max_steps, max_iter):
         res_Vec = problem.get_residual(Lambda, uVec)
 
         for iIter in range(max_iter):
-            #q_Vec = problem.get_incremental_load(Lambda) # Stemmer dette? External load sv incremental load
-            q_Vec = problem.get_external_load(Lambda)
+
+
             K_mat = problem.get_K_sys(uVec)
 
             w_q = np.linalg.solve(K_mat,q_Vec)
@@ -237,10 +237,9 @@ class BeamModel:
         f_res = f_ext - f_int
         
         # Set boundary conditions
-
         for idof in range(len(self.bc)):
             idx = self.bc[idof] - 1
-            f_res[idx]   = 0.0
+            f_res[idx]   = 0.0 #For any fixed DOFs the residual must be set to 0
 
         return f_res
 

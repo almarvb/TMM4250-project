@@ -60,6 +60,7 @@ num_nodes = 5
 #beamModel = sbeam.CantileverWithEndMoment(num_nodes)
 beamModel = DeepArchModel(num_nodes)
 
+
 load_steps=0.01 
 
 archLength=0.02
