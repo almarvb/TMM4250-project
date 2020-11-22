@@ -1,64 +1,70 @@
-# example Beam_models
-# ----------------------------------------------------------------
-# PURPOSE
-#  Starting point for a couple of beam models
+'''This file contains the BeamModel class with three beam models CantileverWithEndMoment, SimplySupportedBeamModel \
+and DeepArchModel,along with the three solving algotithms SolveLinearSteps, SolveNonlinLoadControl and SolveArcLength.'''
 
 
 import math
 import numpy as np
 import matplotlib.pyplot as plt
-import CorotBeam_with_TODO as CorotBeam
+import CorotBeam as CorotBeam
 import matplotlib.animation as anm
 from copy import deepcopy
 # ----- Topology -------------------------------------------------
 
-def solveArchLength(problem, archLength=0.02, max_steps=50, max_iter=30):
+
+def solveArcLength(problem, archLength, max_steps, max_iter):
     num_dofs = problem.get_num_dofs()
     uVec = np.zeros(num_dofs)
     res_Vec = np.zeros(num_dofs)
     Lambda = 0.0
 
-    d_q_prev = np.zeros(num_dofs)
-
+    v_0 = np.zeros(num_dofs)
+    q_Vec = problem.get_incremental_load(Lambda)
     for iStep in range(max_steps):
         #TODO: Implement this predictor step, (sverre: trur eg er ferdig)
-        q_Vec = problem.get_incremental_load(Lambda)
+
         K_mat = problem.get_K_sys(uVec)
 
         w_q0 = np.linalg.solve(K_mat,q_Vec)
         f = math.sqrt(1 + w_q0.T @ w_q0)
 
-        if (w_q0.T @ d_q_prev) >= 0.0:
+        if (w_q0.T @ v_0) >= 0.0:
             delta_Lambda = archLength / f
         else:
             delta_Lambda = - archLength / f
 
-        d_q_prev = (delta_Lambda * w_q0)
+        v_0 = (delta_Lambda * w_q0)
         Lambda += delta_Lambda
-        uVec += d_q_prev
+        uVec += v_0
+
+        bConverged = False
+        res_Vec = problem.get_residual(Lambda, uVec)
 
         for iIter in range(max_iter):
-            res_Vec = problem.get_residual(Lambda, uVec)
+
+
             K_mat = problem.get_K_sys(uVec)
-            q_Vec = problem.get_incremental_load(Lambda)
 
             w_q = np.linalg.solve(K_mat,q_Vec)
             w_r = np.linalg.solve(K_mat,-res_Vec)
 
-
-            d_Lambda = - w_q.T @ w_r / (1 + w_q.T @ w_r)
+            d_Lambda = - (w_q.T @ w_r) / (1 + w_q.T @ w_q)
 
             Lambda += d_Lambda
-            uVec += w_r + d_Lambda*w_q
-
-            # TODO: Implement this corrector step, (sverre: trur eg er ferdig, men funker ikkje endo)
+            d_uVec = w_r + d_Lambda*w_q
+            uVec += (d_uVec)
 
             res_Vec = problem.get_residual(Lambda , uVec)
-            if (res_Vec.dot(res_Vec) < 1.0e-15):  #check if residual is small enough
+            resNorm = res_Vec.dot(res_Vec)
+            print("iter {:}  resNorm= {:12.3e}".format(iIter, resNorm))
+            if (resNorm < 1.0e-15):
+                bConverged = True#check if residual is small enough
                 break
-
-        problem.append_solution(Lambda, uVec)
-        print(" ")
+        if (not bConverged):
+            print("Did not converge !!!!!!!!")
+            break
+        else:
+            problem.append_solution(Lambda, deepcopy(uVec))
+            print("Arc Length step {:}  load_factor= {:12.3e}".format(iStep, Lambda))
 
 def solveNonlinLoadControl(problem, load_steps, max_steps, max_iter):
     num_dofs = problem.get_num_dofs()
@@ -90,10 +96,6 @@ def solveNonlinLoadControl(problem, load_steps, max_steps, max_iter):
 
             delta_uVec = np.linalg.solve(K_mat, res_Vec)
             uVec = uVec + delta_uVec
- 
-
-            
-
 
 
         if (not bConverged):
@@ -103,9 +105,7 @@ def solveNonlinLoadControl(problem, load_steps, max_steps, max_iter):
             problem.append_solution(Lambda, deepcopy(uVec))
             print("Non-Linear load step {:}  load_factor= {:12.3e}".format(iStep, Lambda))
 
-
-
-def solveLinearSteps(problem, load_steps=0.01, max_steps=100):
+def solveLinearSteps(problem, load_steps, max_steps):
     num_dofs = problem.get_num_dofs()
     uVec = np.zeros(num_dofs)
 
@@ -123,8 +123,6 @@ def solveLinearSteps(problem, load_steps=0.01, max_steps=100):
 
         problem.append_solution(Lambda, uVec)
         print("Linear load step {:}  load_factor= {:12.3e}".format(iStep, Lambda))
-
-
 
 
 class BeamModel:
@@ -233,10 +231,9 @@ class BeamModel:
         f_res = f_ext - f_int
         
         # Set boundary conditions
-
         for idof in range(len(self.bc)):
             idx = self.bc[idof] - 1
-            f_res[idx]   = 0.0
+            f_res[idx]   = 0.0 #For any fixed DOFs the residual must be set to 0
 
         return f_res
 
@@ -372,27 +369,49 @@ class CantileverWithEndMoment(BeamModel):
         self.inc_load[-1] = MomentFullCircle
         self.plotDof = self.num_dofs - 1 # Setting which dof for the Load-disp curve: y disp of last node
 
+class DeepArchModel(BeamModel):
 
-'''
-# ------------------ Perform linear solution
+    def __init__(self, num_nodes):
+        BeamModel.__init__(self)
 
-num_nodes = 9
-beamModel = SimplySupportedBeamModel(num_nodes)
-#beamModel = CantileverWithEndMoment(num_nodes)
+        self.num_nodes = num_nodes
+        self.num_elements = num_nodes - 1
+        self.num_dofs = self.num_nodes * 3
+        self.E = 2.1e11 #Youngs modulus N/m^2
+        self.A = 0.1 #Area (unit width) m^2
+        self.I = 1/12000 #Moment of inertia m^4
+        self.ep = np.array([self.E, self.A, self.I])
+        self.L = 1.6 # support distance m
+        self.R = 1 # arch radius
+        self.H = 0.4 # arch height
 
-solveLinearSteps(beamModel)
+        theta_0 = math.asin((self.R-self.H)/self.R) #arch start angle, with respect to origin and horizontal
+        theta_el = (math.pi - 2* theta_0)/self.num_elements #element angle increment
 
-num_steps = len(beamModel.load_history)
 
-for iStep in range(num_steps):
-   print("LoadFactor= {:12.3e}".format(beamModel.load_history[iStep]))
-   print("dispVec={:}".format(iStep))
-   print(beamModel.disp_history[iStep])
 
-step_inc = (num_steps // 10)
-for iStep in range(0,len(beamModel.load_history), step_inc):
-    beamModel.plotDispState(iStep)
+        self.coords = np.zeros((self.num_nodes,2)) # Coordinates for all the nodes
+        self.dispState = np.zeros(self.num_nodes*3)
+        self.Ndofs = np.zeros((self.num_nodes,3)) # Dofs for all the nodes
 
-print("End")
+        for i in range(self.num_nodes):
+            theta = theta_0 + i*theta_el
+            self.coords[i,0] = self.L / 2 - self.R * math.cos(theta) #x-coordinates
+            self.coords[i,1] = (self.H + self.R * (math.sin(theta) - 1) )  #y-coordinates
+            self.Ndofs[i,:] = np.array([1,2,3],dtype=int) + i*3
 
-'''
+        self.Edofs = np.zeros((self.num_elements,6),dtype=int) # Element dofs for all the elements
+        self.Enods = np.zeros((self.num_elements,2),dtype=int) # Element nodes for all the elements
+        for i in range(self.num_elements):
+            self.Edofs[i,:] = np.array([1,2,3,4,5,6],dtype=int) + 3*i
+            self.Enods[i,:] = np.array([1,2],dtype=int) + i
+
+        # Fix x and y at first node and y at last node
+        self.bc = np.array([1,2,(self.num_nodes*3 -1), (self.num_nodes*3 -2)],dtype=int)
+
+        # The external incremental load (linear scaling with lambda)
+        mid_node      = (self.num_nodes +1) // 2
+        mid_y_dof_idx = (mid_node-1) * 3 + 1
+        self.inc_load = np.zeros(self.num_dofs)
+        self.inc_load[mid_y_dof_idx] = -500.0e+7
+        self.plotDof = mid_y_dof_idx + 1
