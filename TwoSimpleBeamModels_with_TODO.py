@@ -17,29 +17,32 @@ def solveArchLength(problem, archLength, max_steps, max_iter):
     uVec = np.zeros(num_dofs)
     res_Vec = np.zeros(num_dofs)
     Lambda = 0.0
-    q_Vec = problem.get_incremental_load(Lambda)
-    d_q_prev = np.zeros(num_dofs)
+
+    v_0 = np.zeros(num_dofs)
 
     for iStep in range(max_steps):
         #TODO: Implement this predictor step, (sverre: trur eg er ferdig)
-
+        q_Vec = problem.get_external_load(Lambda)
         K_mat = problem.get_K_sys(uVec)
 
         w_q0 = np.linalg.solve(K_mat,q_Vec)
         f = math.sqrt(1 + w_q0.T @ w_q0)
 
-        if (w_q0.T @ d_q_prev) >= 0.0:
+        if (w_q0.T @ v_0) >= 0.0:
             delta_Lambda = archLength / f
         else:
             delta_Lambda = - archLength / f
 
-        d_q_prev = (delta_Lambda * w_q0)
+        v_0 = (delta_Lambda * w_q0)
         Lambda += delta_Lambda
-        uVec += d_q_prev
+        uVec += v_0
+
         bConverged = False
         res_Vec = problem.get_residual(Lambda, uVec)
-        for iIter in range(max_iter):
 
+        for iIter in range(max_iter):
+            #q_Vec = problem.get_incremental_load(Lambda) # Stemmer dette? External load sv incremental load
+            q_Vec = problem.get_external_load(Lambda)
             K_mat = problem.get_K_sys(uVec)
 
             w_q = np.linalg.solve(K_mat,q_Vec)
