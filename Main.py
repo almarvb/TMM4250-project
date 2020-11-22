@@ -2,7 +2,7 @@
 import BeamModels as sbeam
 
 
-# ------------------ This main script will solve the selected beam model using the selected solver and parameters
+'''This main script will solve the selected beam model using the selected solver and parameters.'''
 
 '''Decide number of nodes in structure'''
 num_nodes = 9
@@ -14,13 +14,13 @@ beamModel = sbeam.CantileverWithEndMoment(num_nodes)
 
 '''Select applicable solver parameters'''
 load_steps=0.01 #in case of LoadControl
-archLength=0.02 #in case of ArchLength
+arcLength=0.02 #in case of ArcLength
 max_steps=100
 max_iter=30
 
 '''Select 1 solver method:'''
-sbeam.solveNonlinLoadControl(beamModel,load_steps, max_steps, max_iter)
-#sbeam.solveArchLength(beamModel, archLength, max_steps, max_iter)
+#sbeam.solveNonlinLoadControl(beamModel,load_steps, max_steps, max_iter)
+sbeam.solveArcLength(beamModel, arcLength, max_steps, max_iter)
 #sbeam.solveLinearSteps(beamModel, load_steps, max_steps)
 
 

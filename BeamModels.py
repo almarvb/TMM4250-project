@@ -1,7 +1,5 @@
-# example Beam_models
-# ----------------------------------------------------------------
-# PURPOSE
-#  Starting point for a couple of beam models
+'''This file contains the BeamModel class with three beam models CantileverWithEndMoment, SimplySupportedBeamModel \
+and DeepArchModel,along with the three solving algotithms SolveLinearSteps, SolveNonlinLoadControl and SolveArcLength.'''
 
 
 import math
@@ -12,7 +10,7 @@ import matplotlib.animation as anm
 from copy import deepcopy
 # ----- Topology -------------------------------------------------
 
-def solveArchLength(problem, archLength, max_steps, max_iter):
+def solveArcLength(problem, archLength, max_steps, max_iter):
     num_dofs = problem.get_num_dofs()
     uVec = np.zeros(num_dofs)
     res_Vec = np.zeros(num_dofs)
