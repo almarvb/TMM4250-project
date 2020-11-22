@@ -1,9 +1,4 @@
-# -*- coding: utf-8 -*-
-"""
-Created on Fri Oct 19 16:43:51 2018
 
-@author: bjohau
-"""
 
 import numpy as np
 import math
@@ -28,16 +23,15 @@ def beam2local_def_disp(ex,ey, disp_global):
     :param disp_global:  displacement vector [u1, v1, r1, u2, v2, r2] in global directions
     :return: disp_local_def: displacement vector [u1, v1, r1, u2, v2, r2] in local directions
     """
-    eVec12 = np.array([ex[1] - ex[0], ey[1] - ey[0]])
-    L0 = math.sqrt(eVec12 @ eVec12)
+    eVec12 = np.array([ex[1] - ex[0], ey[1] - ey[0]]) #Undeformed element vector
+    L0 = math.sqrt(eVec12 @ eVec12) #Length of undeformed element
 
-    # TODO: Quite a bit here (Almar: tror jeg har gjort alt)
     ex0 = np.array([[(ex[1]-ex[0])/L0],
                     [(ey[1]-ey[0])/L0]])
     exn = np.array([[(ex[1]+disp_global[3])-(ex[0]+disp_global[0])],
                     [(ey[1]+disp_global[4])-(ey[0]+disp_global[1])]])
 
-    Ld = math.sqrt(exn.T @ exn)
+    Ld = math.sqrt(exn.T @ exn)  #Deformed element length
     exn /= Ld
 
     eyn = np.array([[-exn[1,0]],
@@ -54,7 +48,7 @@ def beam2local_def_disp(ex,ey, disp_global):
                                 theta1_def,
                                 0.5 * (Ld - L0),
                                 0.0,
-                                theta2_def])
+                                theta2_def]) #Displacement vector in global coords
     return def_disp_local
 
 
@@ -72,7 +66,6 @@ def beam2corot_Ke_and_Fe(ex,ey,ep, disp_global):
     :return mat Ke: element stiffness matrix [6 x 6]
     :return mat fe: element internal force vector [6 x 1]
     """
-    # TODO: Quite a bit here (Sverre: prøver å fnne ut av denne. vanskelig)
     # Undeformed length and unit vector along element
     eVec12 = np.array([ex[1] - ex[0], ey[1] - ey[0]]) #Undeformed element vector
     L0 = math.sqrt(eVec12 @ eVec12) #Element undeformed length
