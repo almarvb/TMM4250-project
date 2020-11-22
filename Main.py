@@ -1,10 +1,5 @@
-import math
-import numpy as np
-import matplotlib.pyplot as plt
-import CorotBeam_with_TODO as CorotBeam
-import matplotlib.animation as anm
-from copy import deepcopy
-import TwoSimpleBeamModels_with_TODO as sbeam
+
+import BeamModels as sbeam
 
 
 # ------------------ This main script will solve the selected beam model using the selected solver and parameters

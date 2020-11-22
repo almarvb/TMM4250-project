@@ -7,7 +7,7 @@
 import math
 import numpy as np
 import matplotlib.pyplot as plt
-import CorotBeam_with_TODO as CorotBeam
+import CorotBeam as CorotBeam
 import matplotlib.animation as anm
 from copy import deepcopy
 # ----- Topology -------------------------------------------------
