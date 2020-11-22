@@ -19,8 +19,8 @@ max_steps=100
 max_iter=30
 
 '''Select 1 solver method:'''
-#sbeam.solveNonlinLoadControl(beamModel,load_steps, max_steps, max_iter)
-sbeam.solveArcLength(beamModel, arcLength, max_steps, max_iter)
+sbeam.solveNonlinLoadControl(beamModel,load_steps, max_steps, max_iter)
+#sbeam.solveArcLength(beamModel, arcLength, max_steps, max_iter)
 #sbeam.solveLinearSteps(beamModel, load_steps, max_steps)
 
 

@@ -10,6 +10,7 @@ import matplotlib.animation as anm
 from copy import deepcopy
 # ----- Topology -------------------------------------------------
 
+
 def solveArcLength(problem, archLength, max_steps, max_iter):
     num_dofs = problem.get_num_dofs()
     uVec = np.zeros(num_dofs)
@@ -65,7 +66,6 @@ def solveArcLength(problem, archLength, max_steps, max_iter):
             problem.append_solution(Lambda, deepcopy(uVec))
             print("Arc Length step {:}  load_factor= {:12.3e}".format(iStep, Lambda))
 
-
 def solveNonlinLoadControl(problem, load_steps, max_steps, max_iter):
     num_dofs = problem.get_num_dofs()
     
@@ -105,8 +105,6 @@ def solveNonlinLoadControl(problem, load_steps, max_steps, max_iter):
             problem.append_solution(Lambda, deepcopy(uVec))
             print("Non-Linear load step {:}  load_factor= {:12.3e}".format(iStep, Lambda))
 
-
-
 def solveLinearSteps(problem, load_steps, max_steps):
     num_dofs = problem.get_num_dofs()
     uVec = np.zeros(num_dofs)
@@ -125,8 +123,6 @@ def solveLinearSteps(problem, load_steps, max_steps):
 
         problem.append_solution(Lambda, uVec)
         print("Linear load step {:}  load_factor= {:12.3e}".format(iStep, Lambda))
-
-
 
 
 class BeamModel:
@@ -419,27 +415,3 @@ class DeepArchModel(BeamModel):
         self.inc_load = np.zeros(self.num_dofs)
         self.inc_load[mid_y_dof_idx] = -500.0e+7
         self.plotDof = mid_y_dof_idx + 1
-
-'''
-# ------------------ Perform linear solution
-
-num_nodes = 9
-beamModel = SimplySupportedBeamModel(num_nodes)
-#beamModel = CantileverWithEndMoment(num_nodes)
-
-solveLinearSteps(beamModel)
-
-num_steps = len(beamModel.load_history)
-
-for iStep in range(num_steps):
-   print("LoadFactor= {:12.3e}".format(beamModel.load_history[iStep]))
-   print("dispVec={:}".format(iStep))
-   print(beamModel.disp_history[iStep])
-
-step_inc = (num_steps // 10)
-for iStep in range(0,len(beamModel.load_history), step_inc):
-    beamModel.plotDispState(iStep)
-
-print("End")
-
-'''
