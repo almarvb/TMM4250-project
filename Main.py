@@ -1,8 +1,7 @@
 
 import BeamModels as sbeam
 
-
-'''This main script will solve the selected beam model using the selected solver and parameters.'''
+'''This main script will solve the selected beam model using the selected solver and parameters. (Hash out the ones not to be used)'''
 
 '''Decide number of nodes in structure'''
 num_nodes = 9

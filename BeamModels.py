@@ -1,5 +1,7 @@
-'''This file contains the BeamModel class with three beam models CantileverWithEndMoment, SimplySupportedBeamModel \
-and DeepArchModel,along with the three solving algotithms SolveLinearSteps, SolveNonlinLoadControl and SolveArcLength.'''
+'''This file contains the BeamModel class with three beam models:
+ CantileverWithEndMoment, SimplySupportedBeamModel and DeepArchModel,
+ along with the three solving algotithms:
+ SolveLinearSteps, SolveNonlinLoadControl and SolveArcLength.'''
 
 
 import math

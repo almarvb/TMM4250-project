@@ -1,4 +1,4 @@
-
+'''This file contains the corotational formulation functions, and is called on by the solvers in BeamModels.py'''
 
 import numpy as np
 import math
