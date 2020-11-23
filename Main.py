@@ -5,18 +5,18 @@ import BeamModels as sbeam
 (Hash out the ones not to be used)'''
 
 '''Decide number of nodes in structure'''
-num_nodes = 9
+num_nodes = 3
 
 '''Select 1 beam model'''
-beamModel = sbeam.CantileverWithEndMoment(num_nodes)
+#beamModel = sbeam.CantileverWithEndMoment(num_nodes)
 #beamModel = sbeam.SimplySupportedBeamModel(num_nodes)
-#beamModel = sbeam.DeepArchModel(num_nodes)
+beamModel = sbeam.DeepArchModel(num_nodes)
 
 '''Select applicable solver parameters'''
 load_steps=0.01  # Size of load steps in case of LoadControl
-arcLength=0.02  # Arc length in case of ArcLength algorithm
-max_steps=100  # Allowed number of steps
-max_iter=30  # Allowed number of corrector iterations
+arcLength=0.02   # Arc length in case of ArcLength algorithm
+max_steps=100    # Allowed number of steps
+max_iter=30      # Allowed number of corrector iterations
 
 '''Select 1 solver method:'''
 #sbeam.solveNonlinLoadControl(beamModel,load_steps, max_steps, max_iter)

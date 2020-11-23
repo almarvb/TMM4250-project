@@ -21,7 +21,7 @@ def solveArcLength(problem, archLength, max_steps, max_iter):
 
     v_0 = np.zeros(num_dofs)
     q_Vec = problem.get_incremental_load(Lambda)
-    for iStep in range(max_steps):
+    for iStep in range(max_steps):  # Predictor step
 
         K_mat = problem.get_K_sys(uVec)
 
@@ -40,10 +40,8 @@ def solveArcLength(problem, archLength, max_steps, max_iter):
         bConverged = False
         res_Vec = problem.get_residual(Lambda, uVec)
 
-        for iIter in range(max_iter):
-
-
-            K_mat = problem.get_K_sys(uVec)
+        for iIter in range(max_iter):  # Corrector step
+            K_mat = problem.get_K_sys(uVec)  # Build system stiffness matrix
 
             w_q = np.linalg.solve(K_mat, q_Vec)
             w_r = np.linalg.solve(K_mat, -res_Vec)
